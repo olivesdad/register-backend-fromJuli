@@ -23,44 +23,32 @@ public class StudentController  {
 	 */
 	@PostMapping("/student")
 	@Transactional
-	public StudentDTO addNewStudent ( @RequestParam("name") String name, @RequestParam("email") String email ) {
+	public String addNewStudent ( @RequestParam("name") String name, @RequestParam("email") String email ) {
 		
-		// Check if email already exists in the system...
+		String message;
 		
-		Student student = new Student();
+		// Check if email already exists in database (duplicates not allowed)
+		Student existingStudent = studentRepository.findByEmail(email);
 		
-		student.setName(name);
-		student.setEmail(email);
-		student.setStatus(null);
-		student.setStatusCode(0);
-		Student savedStudent = studentRepository.save(student);
+		if(existingStudent != null) {
+			message = String.format("Failed to add %s.  The email address (%s) is already in use.", name, email);
+		} else {
+			Student student = new Student();
+			
+			student.setName(name);
+			student.setEmail(email);
+			student.setStatus(null);
+			student.setStatusCode(0);
+			studentRepository.save(student);
+			
+			// Student savedStudent = studentRepository.save(student);
+			// StudentDTO result = createStudentDTO(savedStudent);
+			
+			message = String.format("Student (%s) successfully added.\n", name);
+		}
 		
-		StudentDTO result = createStudentDTO(savedStudent);
-		return result;
+		return message;
 	}
-	
-	
-	
-	
-//	public StudentDTO addNewStudent ( @RequestBody StudentDTO studentDTO ) {
-//		
-//		Student student = new Student();
-//		
-//		student.setName(studentDTO.studentName);
-//		student.setEmail(studentDTO.studentEmail);
-//		student.setStatus(studentDTO.studentStatus);
-//		student.setStatusCode(studentDTO.studentStatusCode);
-//		Student savedStudent = studentRepository.save(student);
-//		
-//		StudentDTO result = createStudentDTO(savedStudent);
-//		return result;
-//	}
-	
-	
-	
-	
-	
-	
 	
 	/*
 	 * place student registration on hold
@@ -74,14 +62,14 @@ public class StudentController  {
 		
 		if (student != null)
 			if (student.getStatusCode() == 1)
-				message = "Student is already on hold.\n";
+				message = String.format("Student (%s) is already on HOLD.\n", student.getName());
 			else {
 				student.setStatusCode(1);
 				student.setStatus("HOLD");
-				message = "Student is now on hold.\n";
+				message = String.format("Student (%s) is now on HOLD.\n", student.getName());
 			}
 		else
-			message = "Student does not exist.";
+			message = String.format("Student (%s) was not found.", student_id);
 
 		return message;
 	}
@@ -98,14 +86,14 @@ public class StudentController  {
 		
 		if (student != null)
 			if (student.getStatusCode() == 0)
-				message = "Student was not on hold.\n";
+				message = String.format("Student (%s) was not on HOLD.\n", student.getName());
 			else {
 				student.setStatusCode(0);
 				student.setStatus(null);
-				message = "Student is no longer on hold.\n";
+				message = String.format("Student (%s) is no longer on HOLD.\n", student.getName());
 			}
 		else
-			message = "Student does not exist.";
+			message = String.format("Student (%s) was not found.", student_id);
 
 		return message;
 	}
