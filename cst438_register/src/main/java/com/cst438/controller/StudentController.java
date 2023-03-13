@@ -1,6 +1,9 @@
 package com.cst438.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -8,8 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
+
 import com.cst438.domain.StudentDTO;
 
 @RestController
@@ -23,31 +30,35 @@ public class StudentController  {
 	 */
 	@PostMapping("/student")
 	@Transactional
-	public String addNewStudent ( @RequestParam("name") String name, @RequestParam("email") String email ) {
+	public StudentDTO addNewStudent ( @RequestParam("name") String name, @RequestParam("email") String email ) {
+
+		// What happens when the request parameters are missing?  Should an exception be thrown?
 		
-		String message;
+		Student student = new Student();
+		StudentDTO result;
 		
 		// Check if email already exists in database (duplicates not allowed)
 		Student existingStudent = studentRepository.findByEmail(email);
 		
-		if(existingStudent != null) {
-			message = String.format("Failed to add %s.  The email address (%s) is already in use.", name, email);
-		} else {
-			Student student = new Student();
-			
+		if(existingStudent == null) {
 			student.setName(name);
 			student.setEmail(email);
 			student.setStatus(null);
 			student.setStatusCode(0);
-			studentRepository.save(student);
 			
-			// Student savedStudent = studentRepository.save(student);
-			// StudentDTO result = createStudentDTO(savedStudent);
+			Student savedStudent = studentRepository.save(student);
+			result = createStudentDTO(savedStudent);
+		} else {
+			// Email is a duplicate.
 			
-			message = String.format("Student (%s) successfully added.\n", name);
+			// If email is duplicate, return a null object with id = -1
+			// student.setStudent_id(-1);
+			// result = createStudentDTO(student);
+			
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to add " + name + ". The email address (" + email + ") is already in use.");
 		}
 		
-		return message;
+		return result;
 	}
 	
 	/*
@@ -114,4 +125,6 @@ public class StudentController  {
 		return studentDTO;
 	}
 }
+
+
 
