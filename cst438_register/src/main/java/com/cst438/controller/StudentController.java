@@ -26,7 +26,11 @@ public class StudentController  {
 	StudentRepository studentRepository;
 	
 	/*
-	 * add student to database
+	 * Add student to database
+	 * 
+	 * As an administrator, I can add a student to the system.  I input the
+	 * student email and name.  The student email must not already exists in
+	 * the system.
 	 */
 	@PostMapping("/student")
 	@Transactional
@@ -62,7 +66,9 @@ public class StudentController  {
 	}
 	
 	/*
-	 * place student registration on hold
+	 * Place student registration on hold
+	 * 
+	 * As an administrator, I can put student registration on HOLD.
 	 */
 	@PutMapping("/student/add_hold/{student_id}")
 	@Transactional
@@ -86,7 +92,9 @@ public class StudentController  {
 	}
 	
 	/*
-	 * release hold on student registration
+	 * Release hold on student registration
+	 * 
+	 * As an administrator, I can release the HOLD on student registration.
 	 */
 	@PutMapping("/student/remove_hold/{student_id}")
 	@Transactional
